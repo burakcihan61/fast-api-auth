@@ -1,0 +1,48 @@
+# FastAPI ecosystem
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-dotenv>=1.0.0
+
+# Pydantic v2
+pydantic>=2.8.0
+pydantic[email]>=2.8.0
+pydantic-settings>=2.4.0
+
+# ASGI server
+gunicorn>=22.0.0
+
+# SQLAlchemy 2.0 + PostgreSQL
+sqlalchemy[asyncio]>=2.0.30
+asyncpg>=0.29.0
+alembic>=1.13.0
+psycopg2-binary>=2.9.9
+sqlalchemy-utils>=0.41.0
+
+# JWT & Authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt==4.0.1
+python-multipart>=0.0.9
+cryptography>=42.0.0
+itsdangerous>=2.1.2
+
+# Redis
+redis[hiredis]>=5.0.0
+
+# HTTP client
+httpx>=0.27.0
+
+# Rate limiting
+slowapi>=0.1.9
+
+# WebSocket
+websockets>=12.0
+
+# Logging & Tracing
+structlog>=24.1.0
+
+# Error tracking
+sentry-sdk[fastapi]>=1.40.0
+
+# Metrics
+prometheus-fastapi-instrumentator>=7.0.0
