@@ -1,13 +1,14 @@
 """API endpoints for background tasks"""
 
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+
 from celery.result import AsyncResult
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, EmailStr
 
 from app.api.deps import get_current_active_user
 from app.models.user import User
-from app.tasks.sample_tasks import send_email_task, generate_report_task
+from app.tasks.sample_tasks import generate_report_task, send_email_task
 
 router = APIRouter()
 
@@ -49,14 +50,14 @@ async def get_task_status(
 ) -> TaskStatusResponse:
     """Get the status and result of a background task"""
     task_result = AsyncResult(task_id)
-    
+
     result = None
     if task_result.ready():
         result = task_result.result
         # If result is an Exception, return it as string
         if isinstance(result, Exception):
             result = str(result)
-            
+
     return TaskStatusResponse(
         task_id=task_id,
         status=task_result.status,

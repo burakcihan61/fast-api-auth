@@ -1,6 +1,6 @@
 """API dependencies - reusable dependency injection"""
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +17,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     oauth_token: str | None = Depends(oauth2_scheme),
     bearer_token: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
@@ -82,6 +83,8 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Store user in request state for rate limiting and logging
+    request.state.user = user
     return user
 
 

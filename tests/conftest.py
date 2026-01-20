@@ -73,14 +73,19 @@ async def normal_user_token_headers(client: AsyncClient, db_session: AsyncSessio
         "password": "Password123!",
         "full_name": "Normal User",
     }
-    
-    # Register
-    await client.post("/api/v1/auth/register", json=user_data)
-    
-    # Login
+
+    # Register with bypass header
+    await client.post(
+        "/api/v1/auth/register",
+        json=user_data,
+        headers={"X-Skip-Rate-Limit": "test-bypass-secret"}
+    )
+
+    # Login with bypass header
     response = await client.post(
         "/api/v1/auth/login",
         data={"username": user_data["username"], "password": user_data["password"]},
+        headers={"X-Skip-Rate-Limit": "test-bypass-secret"}
     )
     token = response.json()["data"]["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -89,9 +94,9 @@ async def normal_user_token_headers(client: AsyncClient, db_session: AsyncSessio
 @pytest_asyncio.fixture(scope="function")
 async def superuser_token_headers(client: AsyncClient, db_session: AsyncSession) -> dict[str, str]:
     """Create a superuser and return authorization headers"""
-    from app.models.user import User
     from app.core.security import get_password_hash
-    
+    from app.models.user import User
+
     user = User(
         email="admin@example.com",
         username="admin",
@@ -100,7 +105,7 @@ async def superuser_token_headers(client: AsyncClient, db_session: AsyncSession)
     )
     db_session.add(user)
     await db_session.commit()
-    
+
     # Login
     response = await client.post(
         "/api/v1/auth/login",

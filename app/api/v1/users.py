@@ -1,10 +1,11 @@
 """User management endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import RoleChecker, get_current_active_user, get_current_superuser
 from app.core.database import get_db
+from app.core.rate_limit import get_rate_limit, limiter
 from app.crud.user import user as user_crud
 from app.models.user import User, UserRole
 from app.schemas.base import DataResponse, PaginatedResponse
@@ -14,7 +15,9 @@ router = APIRouter()
 
 
 @router.get("/me", response_model=DataResponse[UserResponse])
+@limiter.limit(get_rate_limit)
 async def get_current_user_info(
+    request: Request,
     current_user: User = Depends(get_current_active_user),
 ) -> DataResponse[UserResponse]:
     """Get current user information"""

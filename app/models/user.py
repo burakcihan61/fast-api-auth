@@ -28,6 +28,7 @@ class User(BaseModel):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER, nullable=False)
+    is_premium: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     def __repr__(self) -> str:
         return (

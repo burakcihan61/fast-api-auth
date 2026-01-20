@@ -1,8 +1,10 @@
 """Sample background tasks"""
 
 import time
+
 from app.core.celery_app import celery_app
 from app.core.logging import logger
+
 
 @celery_app.task(name="send_email_task")
 def send_email_task(email: str, subject: str, message: str) -> dict:
