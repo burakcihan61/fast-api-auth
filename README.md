@@ -15,6 +15,7 @@ FastAPI project with PostgreSQL, Redis, JWT authentication, and modern Python be
 - **Structured logging** with structlog
 - **Pre-commit hooks** for code quality
 - **Comprehensive testing** with pytest
+- **Background tasks** with Celery & Redis
 
 ## 📋 Requirements
 
@@ -239,6 +240,34 @@ For production deployment, ensure:
 - SQLAlchemy 2.0: https://docs.sqlalchemy.org/en/20/
 - Pydantic v2: https://docs.pydantic.dev/latest/
 - Alembic: https://alembic.sqlalchemy.org
+
+## 👷 Background Tasks
+
+The project uses Celery with Redis for asynchronous task management.
+
+### Commands
+
+**Start Celery Worker (Windows):**
+```bash
+celery -A app.worker worker --loglevel=info -P solo
+```
+
+**Start Celery Worker (Linux/macOS):**
+```bash
+celery -A app.worker worker --loglevel=info
+```
+
+**Monitor with Flower:**
+```bash
+celery -A app.worker flower
+```
+
+### Endpoints
+- `POST /api/v1/tasks/email` - Trigger async email simulation
+- `POST /api/v1/tasks/report` - Trigger async report generation
+- `GET /api/v1/tasks/{task_id}` - Check task status and result
+
+---
 
 ## 📄 License
 
