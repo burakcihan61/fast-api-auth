@@ -1,11 +1,13 @@
 """User management endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import RoleChecker, get_current_active_user, get_current_superuser
 from app.core.database import get_db
-from app.core.rate_limit import get_rate_limit, limiter
+from app.core.rate_limit import get_dynamic_rate_limit, limiter
 from app.crud.user import user as user_crud
 from app.models.user import User, UserRole
 from app.schemas.base import DataResponse, PaginatedResponse
@@ -15,16 +17,19 @@ router = APIRouter()
 
 
 @router.get("/me", response_model=DataResponse[UserResponse])
-@limiter.limit(get_rate_limit)
+@limiter.limit(get_dynamic_rate_limit)
 async def get_current_user_info(
     request: Request,
+    response: Response,
     current_user: User = Depends(get_current_active_user),
 ) -> DataResponse[UserResponse]:
     """Get current user information"""
-    return DataResponse(
-        success=True,
-        message="User retrieved successfully",
-        data=UserResponse.model_validate(current_user),
+    return JSONResponse(
+        content=jsonable_encoder(DataResponse(
+            success=True,
+            message="User retrieved successfully",
+            data=UserResponse.model_validate(current_user),
+        ))
     )
 
 

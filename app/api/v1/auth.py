@@ -1,6 +1,8 @@
 """Authentication endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +24,7 @@ router = APIRouter()
 )
 @limiter.limit("5/minute")
 async def register(
-    request: Request, user_in: UserCreate, db: AsyncSession = Depends(get_db)
+    request: Request, response: Response, user_in: UserCreate, db: AsyncSession = Depends(get_db)
 ) -> DataResponse[UserResponse]:
     """
     Register a new user
@@ -60,17 +62,18 @@ async def register(
         },
     )
 
-    return DataResponse(
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(DataResponse(
         success=True,
         message="User registered successfully",
         data=UserResponse.model_validate(user),
-    )
+    )))
 
 
 @router.post("/login", response_model=DataResponse[TokenResponse])
 @limiter.limit("10/minute")
 async def login(
     request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> DataResponse[TokenResponse]:
@@ -104,7 +107,7 @@ async def login(
         )
 
     # Create tokens (sub must be string for jose library)
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(data={"sub": str(user.id), "is_premium": user.is_premium})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     # Log successful login
@@ -113,7 +116,7 @@ async def login(
         success=True,
     )
 
-    return DataResponse(
+    return JSONResponse(content=jsonable_encoder(DataResponse(
         success=True,
         message="Login successful",
         data=TokenResponse(
@@ -121,7 +124,7 @@ async def login(
             refresh_token=refresh_token,
             token_type="bearer",
         ),
-    )
+    )))
 
 
 @router.post("/logout", response_model=DataResponse[dict])
