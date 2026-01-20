@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_active_user, get_current_superuser
+from app.api.deps import RoleChecker, get_current_active_user, get_current_superuser
 from app.core.database import get_db
 from app.crud.user import user as user_crud
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.base import DataResponse, PaginatedResponse
 from app.schemas.user import UserResponse, UserUpdate
 
@@ -47,7 +47,7 @@ async def update_current_user(
 async def get_users(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
-    current_user: User = Depends(get_current_superuser),
+    current_user: User = Depends(RoleChecker([UserRole.ADMIN, UserRole.MODERATOR])),
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedResponse[UserResponse]:
     """

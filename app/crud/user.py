@@ -31,6 +31,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             username=obj_in.username,
             full_name=obj_in.full_name,
             hashed_password=get_password_hash(obj_in.password),
+            role=obj_in.role,
             is_active=True,
             is_superuser=False,
         )

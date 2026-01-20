@@ -6,6 +6,7 @@ from typing import Annotated
 
 from pydantic import EmailStr, Field, field_validator
 
+from app.models.user import UserRole
 from app.schemas.base import BaseSchema
 
 
@@ -23,6 +24,7 @@ class UserBase(BaseSchema):
         ),
     ]
     full_name: str | None = Field(None, min_length=1, max_length=100)
+    role: UserRole = Field(default=UserRole.USER, description="User role")
 
 
 class UserCreate(UserBase):
@@ -64,6 +66,7 @@ class UserUpdate(BaseSchema):
     email: EmailStr | None = None
     full_name: str | None = Field(None, min_length=1, max_length=100)
     password: str | None = Field(None, min_length=8, max_length=100)
+    role: UserRole | None = None
 
 
 class UserResponse(UserBase):
