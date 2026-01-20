@@ -11,19 +11,28 @@ from app.api.v1.router import api_router
 from app.core.cache import close_redis, get_redis
 from app.core.config import settings
 from app.core.database import close_db, init_db
+from app.core.logging import logger, setup_logging
 from app.middleware.error_handler import ExceptionHandlerMiddleware
+from app.middleware.logging import LoggingMiddleware
+
+# Initialize logging
+setup_logging()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
+    logger.info("Application starting up...")
     await init_db()
     await get_redis()  # Initialize Redis connection
+    logger.info("Application startup complete")
     yield
     # Shutdown
+    logger.info("Application shutting down...")
     await close_db()
     await close_redis()
+    logger.info("Application shutdown complete")
 
 
 # Create FastAPI application
@@ -58,6 +67,9 @@ app.add_middleware(
 
 # Custom Exception Handler
 app.add_middleware(ExceptionHandlerMiddleware)
+
+# Logging Middleware (request/response tracking)
+app.add_middleware(LoggingMiddleware)
 
 # ==========================================
 # Prometheus Metrics

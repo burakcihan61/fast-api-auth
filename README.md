@@ -250,4 +250,72 @@ Your Name
 
 ---
 
+## 📝 Logging
+
+### Professional Structured Logging System
+
+The project includes a production-ready logging system with:
+
+**Features:**
+- **JSON Formatted Logs** - Machine-readable structured logging
+- **Correlation IDs** - Track requests across the application
+- **Request/Response Tracking** - Automatic HTTP logging
+- **Authentication Auditing** - Security event tracking
+- **Log Rotation** - Automatic file rotation (10MB per file)
+- **Multiple Handlers** - Console, file, and error-specific logs
+
+**Log Files:**
+```
+logs/
+├── app.log       # General application logs (JSON format)
+├── error.log     # Error logs only (JSON format)
+└── access.log    # HTTP request/response logs (JSON format)
+```
+
+**Log Format (Production):**
+```json
+{
+  "timestamp": "2026-01-21T00:42:08",
+  "level": "INFO",
+  "message": "Request completed: GET /health - 200 (0.042s)",
+  "correlation_id": "abc-123",
+  "status_code": 200,
+  "duration_ms": 42.15
+}
+```
+
+**Usage Example:**
+```python
+from app.core.logging import logger
+
+# Basic logging
+logger.info("User action completed")
+
+# With structured context
+logger.info(
+    "User registered",
+    extra={
+        "event": "user_registration",
+        "user_id": 123,
+        "username": "johndoe"
+    }
+)
+```
+
+**View Logs:**
+```bash
+# Live log monitoring
+docker-compose logs -f api
+
+# JSON formatted logs
+docker-compose logs api | Select-String -Pattern "ERROR"
+
+# Authentication events
+docker-compose logs api | Select-String -Pattern "authentication"
+```
+
+**Detailed Documentation:** [LOGGING.md](LOGGING.md)
+
+---
+
 For more detailed information, see [rules.md](rules.md)

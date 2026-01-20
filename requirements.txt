@@ -40,6 +40,7 @@ websockets>=12.0
 
 # Logging & Tracing
 structlog>=24.1.0
+python-json-logger>=2.0.7
 
 # Error tracking
 sentry-sdk[fastapi]>=1.40.0

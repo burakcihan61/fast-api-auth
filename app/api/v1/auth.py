@@ -8,8 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import bearer_scheme, oauth2_scheme
 from app.core.database import get_db
+from app.core.logging import logger
 from app.core.security import create_access_token, create_refresh_token
 from app.crud.user import user as user_crud
+from app.middleware.logging import log_authentication
 from app.schemas.base import DataResponse
 from app.schemas.user import TokenResponse, UserCreate, UserResponse
 
@@ -43,6 +45,16 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> D
     # Create new user
     user = await user_crud.create(db, obj_in=user_in)
     await db.commit()
+    
+    # Log successful registration
+    logger.info(
+        f"New user registered: {user.username}",
+        extra={
+            "event": "user_registered",
+            "user_id": user.id,
+            "username": user.username,
+        },
+    )
 
     return DataResponse(
         success=True,
@@ -67,6 +79,12 @@ async def login(
         db, username=form_data.username, password=form_data.password
     )
     if not user:
+        # Log failed login
+        log_authentication(
+            username=form_data.username,
+            success=False,
+            reason="invalid_credentials",
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -82,6 +100,12 @@ async def login(
     # Create tokens (sub must be string for jose library)
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    
+    # Log successful login
+    log_authentication(
+        username=user.username,
+        success=True,
+    )
 
     return DataResponse(
         success=True,
