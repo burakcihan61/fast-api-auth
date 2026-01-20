@@ -62,11 +62,16 @@ async def register(
         },
     )
 
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(DataResponse(
-        success=True,
-        message="User registered successfully",
-        data=UserResponse.model_validate(user),
-    )))
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content=jsonable_encoder(
+            DataResponse(
+                success=True,
+                message="User registered successfully",
+                data=UserResponse.model_validate(user),
+            )
+        ),
+    )
 
 
 @router.post("/login", response_model=DataResponse[TokenResponse])
@@ -116,15 +121,19 @@ async def login(
         success=True,
     )
 
-    return JSONResponse(content=jsonable_encoder(DataResponse(
-        success=True,
-        message="Login successful",
-        data=TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            token_type="bearer",
-        ),
-    )))
+    return JSONResponse(
+        content=jsonable_encoder(
+            DataResponse(
+                success=True,
+                message="Login successful",
+                data=TokenResponse(
+                    access_token=access_token,
+                    refresh_token=refresh_token,
+                    token_type="bearer",
+                ),
+            )
+        )
+    )
 
 
 @router.post("/logout", response_model=DataResponse[dict])

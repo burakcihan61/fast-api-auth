@@ -25,11 +25,13 @@ async def get_current_user_info(
 ) -> DataResponse[UserResponse]:
     """Get current user information"""
     return JSONResponse(
-        content=jsonable_encoder(DataResponse(
-            success=True,
-            message="User retrieved successfully",
-            data=UserResponse.model_validate(current_user),
-        ))
+        content=jsonable_encoder(
+            DataResponse(
+                success=True,
+                message="User retrieved successfully",
+                data=UserResponse.model_validate(current_user),
+            )
+        )
     )
 
 

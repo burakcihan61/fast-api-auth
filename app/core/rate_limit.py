@@ -12,6 +12,7 @@ from app.core.security import verify_token
 # Global context for the current request
 request_var: ContextVar[Request | None] = ContextVar("request", default=None)
 
+
 def user_or_ip_key_func(request: Request) -> str:
     """
     Custom key function for rate limiting.
@@ -20,6 +21,7 @@ def user_or_ip_key_func(request: Request) -> str:
     # Bypass for testing if special header is present
     if request.headers.get("X-Skip-Rate-Limit") == "test-bypass-secret":
         import uuid
+
         return f"bypass-{uuid.uuid4()}"
 
     # Try to get user from token in header
@@ -34,6 +36,7 @@ def user_or_ip_key_func(request: Request) -> str:
     addr = get_remote_address(request)
     return addr or "127.0.0.1"
 
+
 # Initialize Limiter
 # Using Redis as storage if available, otherwise in-memory
 limiter = Limiter(
@@ -42,6 +45,7 @@ limiter = Limiter(
     headers_enabled=True,
     storage_uri=settings.REDIS_URL or "memory://",
 )
+
 
 def get_dynamic_rate_limit() -> str:
     """
