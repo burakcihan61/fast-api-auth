@@ -62,8 +62,8 @@ app.add_middleware(ExceptionHandlerMiddleware)
 # ==========================================
 # Prometheus Metrics
 # ==========================================
-if settings.ENVIRONMENT == "production":
-    Instrumentator().instrument(app).expose(app)
+# Enable metrics in all environments (for development testing, set to production only in prod)
+Instrumentator().instrument(app).expose(app)
 
 # ==========================================
 # API Routes
