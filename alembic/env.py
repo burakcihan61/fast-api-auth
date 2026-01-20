@@ -12,6 +12,7 @@ from alembic import context
 # Import your models here to ensure they're registered
 from app.core.config import settings
 from app.core.database import Base
+from app.models.user import User  # noqa: F401
 
 # this is the Alembic Config object
 config = context.config

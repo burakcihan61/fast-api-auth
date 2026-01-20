@@ -1,9 +1,19 @@
 """User database model"""
 
-from sqlalchemy import Boolean, String
+import enum
+
+from sqlalchemy import Boolean, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
+
+
+class UserRole(str, enum.Enum):
+    """User roles for RBAC"""
+
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+    USER = "user"
 
 
 class User(BaseModel):
@@ -17,6 +27,9 @@ class User(BaseModel):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER, nullable=False)
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, username={self.username}, email={self.email})>"
+        return (
+            f"<User(id={self.id}, username={self.username}, email={self.email}, role={self.role})>"
+        )

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.crud.user import user as user_crud
-from app.models.user import User
+from app.models.user import User, UserRole
 
 # OAuth2 scheme for token authentication (username/password in Swagger)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login", auto_error=False)
@@ -107,3 +107,38 @@ async def get_current_superuser(current_user: User = Depends(get_current_active_
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user
+
+
+class RoleChecker:
+    """
+    Dependency to check if the current user has any of the required roles.
+
+    Example:
+        @router.get("/admin", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
+        def admin_endpoint():
+            ...
+    """
+
+    def __init__(self, allowed_roles: list[UserRole]):
+        self.allowed_roles = allowed_roles
+
+    async def __call__(
+        self,
+        current_user: User = Depends(get_current_active_user),
+    ) -> User:
+        """
+        Check if user role is in allowed roles.
+
+        Returns:
+            The authenticated user if role is allowed.
+        """
+        if current_user.is_superuser:
+            return current_user
+
+        if current_user.role not in self.allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Role '{current_user.role}' does not have enough permissions. "
+                f"Required: {', '.join([r.value for r in self.allowed_roles])}",
+            )
+        return current_user
