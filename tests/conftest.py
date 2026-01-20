@@ -60,7 +60,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
     from httpx import ASGITransport
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://localhost"
     ) as ac:
         yield ac
 
