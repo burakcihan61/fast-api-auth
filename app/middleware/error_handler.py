@@ -27,8 +27,11 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
                     "error_code": type(exc).__name__,
                 },
             )
-        except Exception:
+        except Exception as e:
             # Log the exception here
+            from app.core.logging import logger
+            import traceback
+            logger.error(f"Unhandled exception: {e}", extra={"traceback": traceback.format_exc()})
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={
