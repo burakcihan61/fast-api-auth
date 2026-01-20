@@ -1,7 +1,5 @@
 """User CRUD operations"""
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,13 +12,13 @@ from app.schemas.user import UserCreate, UserUpdate
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     """CRUD operations for User model"""
 
-    async def get_by_email(self, db: AsyncSession, *, email: str) -> Optional[User]:
+    async def get_by_email(self, db: AsyncSession, *, email: str) -> User | None:
         """Get user by email"""
         stmt = select(User).where(User.email == email)
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_username(self, db: AsyncSession, *, username: str) -> Optional[User]:
+    async def get_by_username(self, db: AsyncSession, *, username: str) -> User | None:
         """Get user by username"""
         stmt = select(User).where(User.username == username)
         result = await db.execute(stmt)
@@ -41,9 +39,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def authenticate(
-        self, db: AsyncSession, *, username: str, password: str
-    ) -> Optional[User]:
+    async def authenticate(self, db: AsyncSession, *, username: str, password: str) -> User | None:
         """Authenticate user by username and password"""
         user = await self.get_by_username(db, username=username)
         if not user:

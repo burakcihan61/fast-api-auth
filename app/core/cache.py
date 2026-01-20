@@ -1,15 +1,16 @@
 """Redis cache utilities"""
 
 import json
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, cast
 
 import redis.asyncio as redis
 
 from app.core.config import settings
 
 # Redis client instance
-redis_client: Optional[redis.Redis] = None
+redis_client: redis.Redis | None = None
 
 
 async def get_redis() -> redis.Redis:
@@ -84,7 +85,7 @@ async def invalidate_cache(pattern: str) -> int:
     client = await get_redis()
     keys = await client.keys(pattern)
     if keys:
-        return await client.delete(*keys)
+        return cast(int, await client.delete(*keys))
     return 0
 
 
@@ -92,31 +93,33 @@ async def invalidate_cache(pattern: str) -> int:
 # Token Blacklist Functions
 # ==========================================
 
+
 async def blacklist_token(token: str, expire_seconds: int = 1800) -> bool:
     """
     Add token to blacklist (for logout)
-    
+
     Args:
         token: JWT token to blacklist
         expire_seconds: TTL for blacklist entry (default: 30 min)
-    
+
     Returns:
         True if successful, False otherwise
     """
     try:
-        print(f"[DEBUG] Attempting to blacklist token...")
+        print("[DEBUG] Attempting to blacklist token...")
         client = await get_redis()
         print(f"[DEBUG] Redis client obtained: {type(client)}")
         if client:
             key = f"blacklist:{token}"
             print(f"[DEBUG] Setting key: {key}")
             await client.set(key, "1", ex=expire_seconds)
-            print(f"[DEBUG] Token blacklisted successfully")
+            print("[DEBUG] Token blacklisted successfully")
             return True
-        print(f"[DEBUG] Redis client is None!")
+        print("[DEBUG] Redis client is None!")
         return False
     except Exception as e:
         import traceback
+
         print(f"[ERROR] Error blacklisting token: {e}")
         print(f"[ERROR] Traceback: {traceback.format_exc()}")
         return False
@@ -125,10 +128,10 @@ async def blacklist_token(token: str, expire_seconds: int = 1800) -> bool:
 async def is_token_blacklisted(token: str) -> bool:
     """
     Check if token is blacklisted
-    
+
     Args:
         token: JWT token to check
-    
+
     Returns:
         True if blacklisted, False otherwise
     """
@@ -147,10 +150,10 @@ async def is_token_blacklisted(token: str) -> bool:
 async def remove_from_blacklist(token: str) -> bool:
     """
     Remove token from blacklist (admin function)
-    
+
     Args:
         token: JWT token to remove from blacklist
-    
+
     Returns:
         True if successful, False otherwise
     """

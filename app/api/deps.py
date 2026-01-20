@@ -1,13 +1,10 @@
 """API dependencies - reusable dependency injection"""
 
-from typing import AsyncGenerator, Optional, Union
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.exceptions import UnauthorizedException
 from app.core.security import verify_token
 from app.crud.user import user as user_crud
 from app.models.user import User
@@ -21,8 +18,8 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db),
-    oauth_token: Optional[str] = Depends(oauth2_scheme),
-    bearer_token: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+    oauth_token: str | None = Depends(oauth2_scheme),
+    bearer_token: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> User:
     """
     Get current authenticated user from JWT token
@@ -37,23 +34,24 @@ async def get_current_user(
         token = bearer_token.credentials
     elif oauth_token:
         token = oauth_token
-    
+
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Check if token is blacklisted (logged out)
     from app.core.cache import is_token_blacklisted
+
     if await is_token_blacklisted(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has been revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     payload = verify_token(token)
     if not payload:
         raise HTTPException(
@@ -62,23 +60,23 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user_id: int = payload.get("sub")
-    if user_id is None:
+    user_id_raw = payload.get("sub")
+    if user_id_raw is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Convert string to int (jose requires sub to be string)
     try:
-        user_id = int(user_id)
+        user_id = int(str(user_id_raw))
     except (ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from None
 
     user = await user_crud.get(db, id=user_id)
     if not user:

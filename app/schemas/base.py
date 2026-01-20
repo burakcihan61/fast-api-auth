@@ -1,7 +1,6 @@
 """Base schemas for common response patterns"""
 
-from datetime import datetime
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,13 +21,13 @@ class ResponseBase(BaseModel):
     """Base response schema"""
 
     success: bool = True
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class DataResponse(ResponseBase, Generic[DataType]):
     """Generic response schema with data"""
 
-    data: Optional[DataType] = None
+    data: DataType | None = None
 
 
 class PaginatedResponse(ResponseBase, Generic[DataType]):
@@ -45,5 +44,5 @@ class ErrorResponse(ResponseBase):
     """Error response schema"""
 
     success: bool = False
-    error_code: Optional[str] = None
-    details: Optional[dict[str, Any]] = None
+    error_code: str | None = None
+    details: dict[str, Any] | None = None

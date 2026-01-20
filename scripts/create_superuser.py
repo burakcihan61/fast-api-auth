@@ -2,8 +2,6 @@
 
 import asyncio
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.database import AsyncSessionLocal
 from app.crud.user import user as user_crud
 from app.schemas.user import UserCreate
@@ -43,7 +41,7 @@ async def create_superuser(
         await db.commit()
         await db.refresh(user)
 
-        print(f"✅ Superuser created successfully!")
+        print("✅ Superuser created successfully!")
         print(f"   Email: {user.email}")
         print(f"   Username: {user.username}")
         print(f"   ID: {user.id}")

@@ -1,7 +1,5 @@
 """Authentication endpoints"""
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,8 +16,12 @@ from app.schemas.user import TokenResponse, UserCreate, UserResponse
 router = APIRouter()
 
 
-@router.post("/register", response_model=DataResponse[UserResponse], status_code=status.HTTP_201_CREATED)
-async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> DataResponse[UserResponse]:
+@router.post(
+    "/register", response_model=DataResponse[UserResponse], status_code=status.HTTP_201_CREATED
+)
+async def register(
+    user_in: UserCreate, db: AsyncSession = Depends(get_db)
+) -> DataResponse[UserResponse]:
     """
     Register a new user
 
@@ -45,7 +47,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> D
     # Create new user
     user = await user_crud.create(db, obj_in=user_in)
     await db.commit()
-    
+
     # Log successful registration
     logger.info(
         f"New user registered: {user.username}",
@@ -100,7 +102,7 @@ async def login(
     # Create tokens (sub must be string for jose library)
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
-    
+
     # Log successful login
     log_authentication(
         username=user.username,
@@ -120,40 +122,40 @@ async def login(
 
 @router.post("/logout", response_model=DataResponse[dict])
 async def logout(
-    oauth_token: Optional[str] = Depends(oauth2_scheme),
-    bearer_token: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+    oauth_token: str | None = Depends(oauth2_scheme),
+    bearer_token: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> DataResponse[dict]:
     """
     Logout endpoint - blacklists the current token
-    
+
     The token will be invalid after logout and cannot be reused.
     Token remains blacklisted until its natural expiration (30 minutes).
     """
     from app.core.cache import blacklist_token
-    
+
     # Get token from either source
     token = None
     if bearer_token:
         token = bearer_token.credentials
     elif oauth_token:
         token = oauth_token
-    
+
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="No token provided",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Blacklist the token (TTL = 30 minutes, same as token expiration)
     success = await blacklist_token(token, expire_seconds=1800)
-    
+
     if not success:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Logout failed. Please try again.",
         )
-    
+
     return DataResponse(
         success=True,
         message="Logout successful",

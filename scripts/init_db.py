@@ -2,8 +2,8 @@
 
 import asyncio
 
-from app.core.database import init_db
 from app.core.config import settings
+from app.core.database import init_db
 
 
 async def main() -> None:

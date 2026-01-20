@@ -1,6 +1,8 @@
 """FastAPI main application"""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +22,7 @@ setup_logging()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan events"""
     # Startup
     logger.info("Application starting up...")
@@ -87,7 +89,7 @@ app.include_router(api_router, prefix="/api/v1")
 # Health Check Endpoints
 # ==========================================
 @app.get("/health", tags=["health"])
-async def health_check():
+async def health_check() -> dict[str, Any]:
     """Health check endpoint"""
     return {
         "status": "healthy",
@@ -98,7 +100,7 @@ async def health_check():
 
 
 @app.get("/", tags=["root"])
-async def root():
+async def root() -> dict[str, Any]:
     """Root endpoint"""
     return {
         "message": f"Welcome to {settings.APP_NAME}",

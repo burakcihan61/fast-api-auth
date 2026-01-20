@@ -2,7 +2,7 @@
 
 import re
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated
 
 from pydantic import EmailStr, Field, field_validator
 
@@ -22,7 +22,7 @@ class UserBase(BaseSchema):
             examples=["john_doe", "alice-123"],
         ),
     ]
-    full_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    full_name: str | None = Field(None, min_length=1, max_length=100)
 
 
 class UserCreate(UserBase):
@@ -61,9 +61,9 @@ class UserCreate(UserBase):
 class UserUpdate(BaseSchema):
     """Schema for updating user (all fields optional)"""
 
-    email: Optional[EmailStr] = None
-    full_name: Optional[str] = Field(None, min_length=1, max_length=100)
-    password: Optional[str] = Field(None, min_length=8, max_length=100)
+    email: EmailStr | None = None
+    full_name: str | None = Field(None, min_length=1, max_length=100)
+    password: str | None = Field(None, min_length=8, max_length=100)
 
 
 class UserResponse(UserBase):
@@ -73,7 +73,7 @@ class UserResponse(UserBase):
     is_active: bool
     is_superuser: bool
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
 
 class UserLogin(BaseSchema):
@@ -94,6 +94,6 @@ class TokenResponse(BaseSchema):
 class TokenPayload(BaseSchema):
     """Token payload schema"""
 
-    sub: Optional[int] = None
-    exp: Optional[int] = None
-    type: Optional[str] = None
+    sub: int | None = None
+    exp: int | None = None
+    type: str | None = None

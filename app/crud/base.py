@@ -1,6 +1,6 @@
 """Base CRUD operations"""
 
-from typing import Any, Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -16,7 +16,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     """Base CRUD class with common database operations"""
 
-    def __init__(self, model: Type[ModelType]):
+    def __init__(self, model: type[ModelType]):
         """
         Initialize CRUD with a SQLAlchemy model
 
@@ -25,7 +25,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    async def get(self, db: AsyncSession, id: int) -> Optional[ModelType]:
+    async def get(self, db: AsyncSession, id: int) -> ModelType | None:
         """Get a single record by ID"""
         stmt = select(self.model).where(self.model.id == id)
         result = await db.execute(stmt)
@@ -33,7 +33,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def get_multi(
         self, db: AsyncSession, *, skip: int = 0, limit: int = 100
-    ) -> List[ModelType]:
+    ) -> list[ModelType]:
         """Get multiple records with pagination"""
         stmt = select(self.model).offset(skip).limit(limit)
         result = await db.execute(stmt)
@@ -65,7 +65,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def delete(self, db: AsyncSession, *, id: int) -> Optional[ModelType]:
+    async def delete(self, db: AsyncSession, *, id: int) -> ModelType | None:
         """Delete a record"""
         obj = await self.get(db, id)
         if obj:

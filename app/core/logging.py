@@ -4,7 +4,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from pythonjsonlogger import jsonlogger
 
@@ -20,22 +20,22 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
     def add_fields(
         self,
-        log_record: Dict[str, Any],
+        log_record: dict[str, Any],
         record: logging.LogRecord,
-        message_dict: Dict[str, Any],
+        message_dict: dict[str, Any],
     ) -> None:
         super().add_fields(log_record, record, message_dict)
-        
+
         # Add timestamp
         if not log_record.get("timestamp"):
             log_record["timestamp"] = datetime.utcnow().isoformat()
-        
+
         # Add log level
         if log_record.get("level"):
             log_record["level"] = log_record["level"].upper()
         else:
             log_record["level"] = record.levelname
-        
+
         # Add application info
         log_record["app_name"] = settings.APP_NAME
         log_record["app_version"] = settings.APP_VERSION
@@ -45,7 +45,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 def setup_logging() -> logging.Logger:
     """
     Setup structured logging with JSON format
-    
+
     Features:
     - JSON formatted logs
     - Console and file handlers
@@ -53,14 +53,14 @@ def setup_logging() -> logging.Logger:
     - Request correlation IDs
     - Structured error tracking
     """
-    
+
     # Create logger
     logger = logging.getLogger("fastapi_app")
     logger.setLevel(getattr(logging, settings.LOG_LEVEL.upper()))
-    
+
     # Prevent duplicate logs
     logger.handlers.clear()
-    
+
     # JSON formatter
     json_formatter = CustomJsonFormatter(
         "%(timestamp)s %(level)s %(name)s %(message)s",
@@ -71,11 +71,11 @@ def setup_logging() -> logging.Logger:
             "processName": "process",
         },
     )
-    
+
     # Console handler (for development)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
-    
+
     if settings.ENVIRONMENT == "development":
         # Human-readable format for development
         dev_formatter = logging.Formatter(
@@ -86,13 +86,13 @@ def setup_logging() -> logging.Logger:
     else:
         # JSON format for production
         console_handler.setFormatter(json_formatter)
-    
+
     logger.addHandler(console_handler)
-    
+
     # File handler (JSON format)
     if settings.ENVIRONMENT != "test":
         from logging.handlers import RotatingFileHandler
-        
+
         # General application logs
         app_handler = RotatingFileHandler(
             LOGS_DIR / "app.log",
@@ -103,7 +103,7 @@ def setup_logging() -> logging.Logger:
         app_handler.setLevel(logging.INFO)
         app_handler.setFormatter(json_formatter)
         logger.addHandler(app_handler)
-        
+
         # Error logs (separate file)
         error_handler = RotatingFileHandler(
             LOGS_DIR / "error.log",
@@ -114,7 +114,7 @@ def setup_logging() -> logging.Logger:
         error_handler.setLevel(logging.ERROR)
         error_handler.setFormatter(json_formatter)
         logger.addHandler(error_handler)
-        
+
         # Access logs (HTTP requests)
         access_handler = RotatingFileHandler(
             LOGS_DIR / "access.log",
@@ -124,14 +124,14 @@ def setup_logging() -> logging.Logger:
         )
         access_handler.setLevel(logging.INFO)
         access_handler.setFormatter(json_formatter)
-        
+
         # Create separate logger for access logs
         access_logger = logging.getLogger("access")
         access_logger.setLevel(logging.INFO)
         access_logger.handlers.clear()
         access_logger.addHandler(access_handler)
         access_logger.propagate = False
-    
+
     return logger
 
 

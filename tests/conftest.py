@@ -1,7 +1,7 @@
 """Test configuration and fixtures"""
 
 import asyncio
-from typing import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
 import pytest_asyncio
@@ -15,7 +15,9 @@ from app.core.database import Base, get_db
 from app.main import app
 
 # Use test database
-TEST_DATABASE_URL = settings.TEST_DATABASE_URL or "postgresql+asyncpg://postgres:postgres@localhost:5432/myapp_test"
+TEST_DATABASE_URL = (
+    settings.TEST_DATABASE_URL or "postgresql+asyncpg://postgres:postgres@localhost:5432/myapp_test"
+)
 
 # Create async engine for testing
 engine = create_async_engine(
@@ -24,9 +26,7 @@ engine = create_async_engine(
 )
 
 # Create async session factory
-TestingSessionLocal = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+TestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 @pytest.fixture(scope="session")

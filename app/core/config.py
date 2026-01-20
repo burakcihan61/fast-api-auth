@@ -1,7 +1,6 @@
 """Application configuration using Pydantic Settings"""
 
-from typing import List
-from pydantic import field_validator
+from pydantic import ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -85,7 +84,7 @@ class Settings(BaseSettings):
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: str | None, info) -> str:
+    def assemble_db_connection(cls, v: str | None, info: ValidationInfo) -> str:
         """Construct database URL from components if not provided"""
         if v:
             return v
@@ -98,7 +97,7 @@ class Settings(BaseSettings):
 
     @field_validator("REDIS_URL", mode="before")
     @classmethod
-    def assemble_redis_connection(cls, v: str | None, info) -> str:
+    def assemble_redis_connection(cls, v: str | None, info: ValidationInfo) -> str:
         """Construct Redis URL from components if not provided"""
         if v:
             return v
@@ -110,11 +109,11 @@ class Settings(BaseSettings):
             f"{values.get('REDIS_PORT')}/{values.get('REDIS_DB')}"
         )
 
-    def get_allowed_origins(self) -> List[str]:
+    def get_allowed_origins(self) -> list[str]:
         """Parse CORS allowed origins"""
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
-    def get_allowed_hosts(self) -> List[str]:
+    def get_allowed_hosts(self) -> list[str]:
         """Parse allowed hosts"""
         return [host.strip() for host in self.ALLOWED_HOSTS.split(",")]
 

@@ -1,11 +1,11 @@
 """Database configuration with SQLAlchemy 2.0 async support"""
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
-
 
 # Create async engine
 engine = create_async_engine(
