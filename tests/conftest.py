@@ -64,3 +64,47 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+@pytest_asyncio.fixture(scope="function")
+async def normal_user_token_headers(client: AsyncClient, db_session: AsyncSession) -> dict[str, str]:
+    """Create a normal user and return authorization headers"""
+    user_data = {
+        "email": "normal@example.com",
+        "username": "normaluser",
+        "password": "Password123!",
+        "full_name": "Normal User",
+    }
+    
+    # Register
+    await client.post("/api/v1/auth/register", json=user_data)
+    
+    # Login
+    response = await client.post(
+        "/api/v1/auth/login",
+        data={"username": user_data["username"], "password": user_data["password"]},
+    )
+    token = response.json()["data"]["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture(scope="function")
+async def superuser_token_headers(client: AsyncClient, db_session: AsyncSession) -> dict[str, str]:
+    """Create a superuser and return authorization headers"""
+    from app.models.user import User
+    from app.core.security import get_password_hash
+    
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        hashed_password=get_password_hash("Admin123!"),
+        is_superuser=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    
+    # Login
+    response = await client.post(
+        "/api/v1/auth/login",
+        data={"username": "admin", "password": "Admin123!"},
+    )
+    token = response.json()["data"]["access_token"]
+    return {"Authorization": f"Bearer {token}"}
