@@ -61,7 +61,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # ==========================================
 
 
-
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -86,6 +85,7 @@ app.add_middleware(SlowAPIMiddleware)
 # Logging Middleware (request/response tracking)
 app.add_middleware(LoggingMiddleware)
 
+
 @app.middleware("http")
 async def set_request_context(request: Request, call_next):
     token = request_var.set(request)
@@ -94,6 +94,7 @@ async def set_request_context(request: Request, call_next):
     finally:
         request_var.reset(token)
     return response
+
 
 # ==========================================
 # Prometheus Metrics
