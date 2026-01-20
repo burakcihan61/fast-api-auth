@@ -13,6 +13,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.v1.router import api_router
+from app.api.v2.router import api_router as api_router_v2
 from app.core.cache import close_redis, get_redis
 from app.core.config import settings
 from app.core.database import close_db, init_db
@@ -101,11 +102,6 @@ async def set_request_context(request: Request, call_next):
 # ==========================================
 # Enable metrics in all environments (for development testing, set to production only in prod)
 Instrumentator().instrument(app).expose(app)
-
-# ==========================================
-# API Routes
-# ==========================================
-from app.api.v2.router import api_router as api_router_v2
 
 # ==========================================
 # API Routes
