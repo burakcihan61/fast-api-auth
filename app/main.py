@@ -105,7 +105,13 @@ Instrumentator().instrument(app).expose(app)
 # ==========================================
 # API Routes
 # ==========================================
+from app.api.v2.router import api_router as api_router_v2
+
+# ==========================================
+# API Routes
+# ==========================================
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router_v2, prefix="/api/v2")
 
 
 # ==========================================
