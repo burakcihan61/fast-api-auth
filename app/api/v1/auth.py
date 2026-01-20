@@ -1,12 +1,13 @@
 """Authentication endpoints"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import bearer_scheme, oauth2_scheme
 from app.core.database import get_db
 from app.core.logging import logger
+from app.core.rate_limit import limiter
 from app.core.security import create_access_token, create_refresh_token
 from app.crud.user import user as user_crud
 from app.middleware.logging import log_authentication
@@ -19,8 +20,9 @@ router = APIRouter()
 @router.post(
     "/register", response_model=DataResponse[UserResponse], status_code=status.HTTP_201_CREATED
 )
+@limiter.limit("5/minute")
 async def register(
-    user_in: UserCreate, db: AsyncSession = Depends(get_db)
+    request: Request, user_in: UserCreate, db: AsyncSession = Depends(get_db)
 ) -> DataResponse[UserResponse]:
     """
     Register a new user
@@ -66,7 +68,9 @@ async def register(
 
 
 @router.post("/login", response_model=DataResponse[TokenResponse])
+@limiter.limit("10/minute")
 async def login(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> DataResponse[TokenResponse]:
