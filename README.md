@@ -134,6 +134,13 @@ fast-api/
 - `GET /api/v1/users/{id}` - Get user by ID (superuser)
 - `DELETE /api/v1/users/{id}` - Delete user (superuser)
 
+## 🔄 API Versioning
+
+The API supports versioning via URL path.
+
+- **v1**: `/api/v1` (Current stable)
+- **v2**: `/api/v2` (Experimental/New features)
+
 ## 🧪 Testing
 
 ```bash

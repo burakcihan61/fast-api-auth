@@ -13,6 +13,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.v1.router import api_router
+from app.api.v2.router import api_router as api_router_v2
 from app.core.cache import close_redis, get_redis
 from app.core.config import settings
 from app.core.database import close_db, init_db
@@ -106,6 +107,7 @@ Instrumentator().instrument(app).expose(app)
 # API Routes
 # ==========================================
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router_v2, prefix="/api/v2")
 
 
 # ==========================================
