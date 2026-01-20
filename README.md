@@ -163,6 +163,16 @@ alembic downgrade -1
 alembic current
 ```
 
+## 🛡️ Rate Limiting
+
+The API implements dynamic rate limiting using `slowapi` and Redis.
+
+- **Anonymous Users**: Limited by IP address (default: 5/minute/endpoint).
+- **Authenticated Users**: Limited by User ID (default: 10/minute/endpoint).
+- **Premium Users**: Higher limits (default: 20/minute/endpoint).
+
+Configurable via `RATE_LIMIT_PER_MINUTE` in settings.
+
 ## 📊 Code Quality
 
 ```bash

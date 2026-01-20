@@ -4,19 +4,20 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.v1.router import api_router
 from app.core.cache import close_redis, get_redis
 from app.core.config import settings
 from app.core.database import close_db, init_db
 from app.core.logging import logger, setup_logging
-from app.core.rate_limit import limiter
+from app.core.rate_limit import limiter, request_var
 from app.middleware.error_handler import ExceptionHandlerMiddleware
 from app.middleware.logging import LoggingMiddleware
 
@@ -59,6 +60,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Middleware Configuration
 # ==========================================
 
+
+
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -77,8 +80,20 @@ app.add_middleware(
 # Custom Exception Handler
 app.add_middleware(ExceptionHandlerMiddleware)
 
+# Rate Limiter Middleware
+app.add_middleware(SlowAPIMiddleware)
+
 # Logging Middleware (request/response tracking)
 app.add_middleware(LoggingMiddleware)
+
+@app.middleware("http")
+async def set_request_context(request: Request, call_next):
+    token = request_var.set(request)
+    try:
+        response = await call_next(request)
+    finally:
+        request_var.reset(token)
+    return response
 
 # ==========================================
 # Prometheus Metrics

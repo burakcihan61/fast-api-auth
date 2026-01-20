@@ -64,8 +64,12 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield ac
 
     app.dependency_overrides.clear()
+
+
 @pytest_asyncio.fixture(scope="function")
-async def normal_user_token_headers(client: AsyncClient, db_session: AsyncSession) -> dict[str, str]:
+async def normal_user_token_headers(
+    client: AsyncClient, db_session: AsyncSession
+) -> dict[str, str]:
     """Create a normal user and return authorization headers"""
     user_data = {
         "email": "normal@example.com",
@@ -76,16 +80,14 @@ async def normal_user_token_headers(client: AsyncClient, db_session: AsyncSessio
 
     # Register with bypass header
     await client.post(
-        "/api/v1/auth/register",
-        json=user_data,
-        headers={"X-Skip-Rate-Limit": "test-bypass-secret"}
+        "/api/v1/auth/register", json=user_data, headers={"X-Skip-Rate-Limit": "test-bypass-secret"}
     )
 
     # Login with bypass header
     response = await client.post(
         "/api/v1/auth/login",
         data={"username": user_data["username"], "password": user_data["password"]},
-        headers={"X-Skip-Rate-Limit": "test-bypass-secret"}
+        headers={"X-Skip-Rate-Limit": "test-bypass-secret"},
     )
     token = response.json()["data"]["access_token"]
     return {"Authorization": f"Bearer {token}"}

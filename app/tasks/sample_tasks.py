@@ -15,6 +15,7 @@ def send_email_task(email: str, subject: str, message: str) -> dict:
     logger.info(f"Finished email task for {email}")
     return {"status": "success", "recipient": email, "subject": subject}
 
+
 @celery_app.task(name="generate_report_task")
 def generate_report_task(report_type: str, user_id: int) -> dict:
     """Simulate generating a report"""
@@ -26,5 +27,5 @@ def generate_report_task(report_type: str, user_id: int) -> dict:
         "status": "completed",
         "report_type": report_type,
         "user_id": user_id,
-        "download_url": f"https://example.com/reports/{report_type}_{user_id}.pdf"
+        "download_url": f"https://example.com/reports/{report_type}_{user_id}.pdf",
     }
