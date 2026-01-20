@@ -12,18 +12,22 @@ from app.tasks.sample_tasks import generate_report_task, send_email_task
 
 router = APIRouter()
 
+
 class EmailTaskRequest(BaseModel):
     email: EmailStr
     subject: str = "Test Subject"
     message: str = "This is a test message from background task."
 
+
 class ReportTaskRequest(BaseModel):
     report_type: str
+
 
 class TaskStatusResponse(BaseModel):
     task_id: str
     status: str
     result: Any | None = None
+
 
 @router.post("/email", status_code=status.HTTP_202_ACCEPTED)
 async def trigger_email_task(
@@ -34,6 +38,7 @@ async def trigger_email_task(
     task = send_email_task.delay(request.email, request.subject, request.message)
     return {"task_id": task.id, "message": "Email task triggered"}
 
+
 @router.post("/report", status_code=status.HTTP_202_ACCEPTED)
 async def trigger_report_task(
     request: ReportTaskRequest,
@@ -42,6 +47,7 @@ async def trigger_report_task(
     """Trigger a simulated report generation task"""
     task = generate_report_task.delay(request.report_type, current_user.id)
     return {"task_id": task.id, "message": "Report generation task triggered"}
+
 
 @router.get("/{task_id}", response_model=TaskStatusResponse)
 async def get_task_status(

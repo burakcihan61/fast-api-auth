@@ -11,6 +11,7 @@ async def test_register_rate_limit(client: AsyncClient):
     """Test rate limiting on register endpoint"""
     # Use a unique suffix to avoid 400 Bad Request
     import random
+
     suffix = random.randint(1000, 9999)
 
     triggered = False
@@ -21,7 +22,7 @@ async def test_register_rate_limit(client: AsyncClient):
                 "email": f"rate{suffix}{i}@example.com",
                 "username": f"rate{suffix}{i}",
                 "password": "Password123!",
-            }
+            },
         )
         if response.status_code == 429:
             triggered = True
@@ -29,8 +30,11 @@ async def test_register_rate_limit(client: AsyncClient):
 
     assert triggered, "Rate limit (429) was never triggered"
 
+
 @pytest.mark.asyncio
-async def test_authenticated_user_rate_limit_headers(client: AsyncClient, normal_user_token_headers: dict[str, str]):
+async def test_authenticated_user_rate_limit_headers(
+    client: AsyncClient, normal_user_token_headers: dict[str, str]
+):
     """Test that authenticated users get rate limit headers"""
     response = await client.get("/api/v1/users/me", headers=normal_user_token_headers)
     assert response.status_code == 200
@@ -38,8 +42,11 @@ async def test_authenticated_user_rate_limit_headers(client: AsyncClient, normal
     assert "x-ratelimit-limit" in response.headers
     assert "x-ratelimit-remaining" in response.headers
 
+
 @pytest.mark.asyncio
-async def test_premium_user_rate_limit_higher(client: AsyncClient, db_session, normal_user_token_headers: dict[str, str]):
+async def test_premium_user_rate_limit_higher(
+    client: AsyncClient, db_session, normal_user_token_headers: dict[str, str]
+):
     """Test that premium users have higher rate limits"""
     from sqlalchemy import select
 

@@ -24,6 +24,7 @@ def user_or_ip_key_func(request: Request) -> str:
     # Fallback to IP address
     return get_remote_address(request)
 
+
 # Initialize Limiter
 # Using Redis as storage if available, otherwise in-memory
 limiter = Limiter(
@@ -31,6 +32,7 @@ limiter = Limiter(
     enabled=settings.RATE_LIMIT_ENABLED,
     storage_uri=settings.REDIS_URL or "memory://",
 )
+
 
 def get_rate_limit(request: Request) -> str:
     """
