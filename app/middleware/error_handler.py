@@ -19,11 +19,13 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             return response
         except AppException as exc:
+            from app.core.i18n import t  # Import locally to avoid circular imports
+
             return JSONResponse(
                 status_code=exc.status_code,
                 content={
                     "success": False,
-                    "message": exc.message,
+                    "message": t(exc.message),
                     "error_code": type(exc).__name__,
                 },
             )
@@ -32,13 +34,14 @@ class ExceptionHandlerMiddleware(BaseHTTPMiddleware):
             import traceback
 
             from app.core.logging import logger
+            from app.core.i18n import t
 
             logger.error(f"Unhandled exception: {e}", extra={"traceback": traceback.format_exc()})
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 content={
                     "success": False,
-                    "message": "Internal server error",
+                    "message": t("error_internal_server"),
                     "error_code": "InternalServerError",
                 },
             )

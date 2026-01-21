@@ -79,6 +79,10 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60
     RATE_LIMIT_LOGIN_ATTEMPTS: int = 5
 
+    # Localization
+    DEFAULT_LANGUAGE: str = "en"
+    SUPPORTED_LANGUAGES: list[str] = ["en", "tr"]
+
     # Testing
     TEST_DATABASE_URL: str = ""
 

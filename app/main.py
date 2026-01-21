@@ -19,6 +19,7 @@ from app.core.config import settings
 from app.core.database import close_db, init_db
 from app.core.logging import logger, setup_logging
 from app.core.rate_limit import limiter, request_var
+from app.core.i18n import I18nMiddleware
 from app.middleware.error_handler import ExceptionHandlerMiddleware
 from app.middleware.logging import LoggingMiddleware
 
@@ -80,8 +81,41 @@ app.add_middleware(
 # Custom Exception Handler
 app.add_middleware(ExceptionHandlerMiddleware)
 
+
+# Global Exception Handlers (Standardizing errors)
+from starlette.exceptions import HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from app.core.i18n import t
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "success": False,
+            "message": t(str(exc.detail)),
+            "error_code": "HTTPException",
+        },
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "success": False,
+            "message": t("validation_error"),
+            "details": exc.errors(),
+            "error_code": "RequestValidationError",
+        },
+    )
+
 # Rate Limiter Middleware
 app.add_middleware(SlowAPIMiddleware)
+
+# Internationalization Middleware
+app.add_middleware(I18nMiddleware)
 
 # Logging Middleware (request/response tracking)
 app.add_middleware(LoggingMiddleware)

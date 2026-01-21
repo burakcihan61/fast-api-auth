@@ -1,0 +1,11 @@
+{
+    "hello": "Hello",
+    "welcome": "Welcome to the API",
+    "error_not_found": "Resource not found",
+    "error_unauthorized": "Unauthorized access",
+    "error_forbidden": "Forbidden access",
+    "error_bad_request": "Bad request",
+    "error_internal_server": "Internal server error",
+    "validation_error": "Validation error",
+    "Not Found": "Resource not found"
+}
