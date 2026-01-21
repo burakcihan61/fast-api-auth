@@ -24,14 +24,10 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_active_user),
 ) -> DataResponse[UserResponse]:
     """Get current user information"""
-    return JSONResponse(
-        content=jsonable_encoder(
-            DataResponse(
-                success=True,
-                message="User retrieved successfully",
-                data=UserResponse.model_validate(current_user),
-            )
-        )
+    return DataResponse(
+        success=True,
+        message="User retrieved successfully",
+        data=UserResponse.model_validate(current_user),
     )
 
 
