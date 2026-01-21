@@ -1,10 +1,10 @@
 """FastAPI main application"""
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -56,7 +56,7 @@ app = FastAPI(
 
 # Rate Limiter state
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 
 # ==========================================
 # Middleware Configuration
@@ -89,7 +89,7 @@ from fastapi.responses import JSONResponse
 from app.core.i18n import t
 
 @app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -100,7 +100,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=422,
         content={
@@ -122,7 +122,7 @@ app.add_middleware(LoggingMiddleware)
 
 
 @app.middleware("http")
-async def set_request_context(request: Request, call_next):
+async def set_request_context(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     token = request_var.set(request)
     try:
         response = await call_next(request)
