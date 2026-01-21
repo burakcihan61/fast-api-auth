@@ -1,0 +1,11 @@
+{
+    "hello": "Merhaba",
+    "welcome": "API'ye hoşgeldiniz",
+    "error_not_found": "Kaynak bulunamadı",
+    "error_unauthorized": "Yetkisiz erişim",
+    "error_forbidden": "Erişim engellendi",
+    "error_bad_request": "Geçersiz istek",
+    "error_internal_server": "Sunucu hatası",
+    "validation_error": "Doğrulama hatası",
+    "Not Found": "Kaynak bulunamadı"
+}
